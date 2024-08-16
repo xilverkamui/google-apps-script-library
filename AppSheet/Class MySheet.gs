@@ -1,22 +1,36 @@
-// Definisikan class MySheet
 var MySheet = (function () {
   class MySheet {
-    constructor(spreadsheet, sheetName, debug = true) {
-      if (!(spreadsheet instanceof SpreadsheetApp.Spreadsheet))
-        throw new Error('Parameter "spreadsheet" must be an instance of Spreadsheet');
-      
+    constructor(spreadsheet, sheetName) {
+      if (!isValidSpreadsheet(spreadsheet))
+        throw new Error('Parameter "spreadsheet" must be an instance of Spreadsheet');      
       this.spreadsheet = spreadsheet;
-      this.sheet = this.spreadsheet.getSheetByName(sheetName);
-     
-      if (!this.spreadsheet || !this.sheet) throw new Error('Invalid spreadsheet or sheet');
-
       this.spreadsheetId = this.spreadsheet.getId();
-      this.id = this.sheet.getSheetId();
+      this.spreadsheetName = this.spreadsheet.getName();
+
+      sheet = this.spreadsheet.getSheetByName(sheetName);
+      if (!isValidSheet(sheet)) throw new Error(`Invalid sheet name '${sheetName}'`);
+      this.sheet  = sheet;
+      this.id = this.sheet.getSheetId();  
       this.index = this.sheet.getIndex();
       this.name = this.sheet.getName();
-      this.spreadsheetName = this.spreadsheet.getName();
-      this.debug = debug;
+
+      this.debug = true;
       Logger.log("Initializing sheet %s ...", this.name);
+    }
+
+    setDebug(status = true) { this.debug = status; }
+    getSpreadsheet() { return this.spreadsheet; }
+    getSheet() { return this.sheet; }
+    getName() { return this.name; }
+    getMaxRows() { return this.sheet.getMaxRows(); }
+    getLastRow() { return this.sheet.getLastRow(); }
+    getLastColumn() { return this.sheet.getLastColumn(); }    
+
+    toString() {
+      return {
+         spreadsheetId: this.spreadsheetId, spreadsheetName: this.spreadsheetName
+        ,sheetId: this.sheet.getId(), sheetName: this.sheet.getName(), sheetIndex: this.sheet.getIndex()
+      };
     }
 
     clearSheet(exceptHeader = false) {
@@ -36,7 +50,7 @@ var MySheet = (function () {
     */
     autoAddBlankRows(increament = 50) {
       if (this.debug)
-        Logger.log("Executing autoAddBlankRows ...");
+        Logger.log("Executing autoAddBlankRows .....");
       if (increament < 50)
         increament = 50;
 
@@ -79,9 +93,6 @@ var MySheet = (function () {
     * @param {*} value - The property value.
     */
     setProperty(key, value) { this[key] = value; }
-    setDebug(value) { this.debug = value; }
-    getMaxRows() { return this.sheet.getMaxRows(); }
-    getLastRow() { return this.sheet.getLastRow(); }
     getLastNonEmptyRow() {
       const lastRow = this.sheet.getLastRow();
       const data = this.sheet.getRange(1, 1, lastRow, this.sheet.getLastColumn()).getValues();
@@ -93,8 +104,7 @@ var MySheet = (function () {
       }
       return 0; // Jika semua baris kosong, kembalikan 0
     }
-    getSheet() { return this.sheet; }
-    getSpreadsheet() { return this.spreadsheet; }
+
     /**
     * Returns all properties of the class instance
     * @returns {Object} An object containing all properties of the instance.
@@ -134,6 +144,21 @@ var MySheet = (function () {
     }
     appendRow(newData) {
       return this.appendData([newData]);
+    }
+
+    /**
+     * Set data array to a sheet, overwriting existing data.
+     * @param {Sheet} mySheet - The Sheet object to set the data to.
+     * @param {Array} newData - The data array to be set.
+     */
+    setData(newData) {
+      if (this.debug) Logger.log("Executing setData ...");
+      if (!Array.isArray(newData)) throw new Error("newData parameter must be an array.");
+
+      this.sheet.clearContents();
+      this.autoAddBlankRows(newData.length);
+      this.sheet.setValues(array);
+      if (this.debug) Logger.log("Array written to sheet: " + sheet.getName());
     }
   }
 

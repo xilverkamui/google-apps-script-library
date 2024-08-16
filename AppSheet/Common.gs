@@ -26,3 +26,27 @@ function setUiMenu() {
     .addItem('Do Nothing','doNothing')
     .addToUi();  
 }
+
+ /**
+   * Validate if the provided object is a valid Google Sheet.
+   * @param {Object} sheet - The object to validate.
+   * @returns {boolean} True if the object is a valid Sheet, false otherwise.
+   */
+function isValidSheet(sheet) {
+  return sheet &&
+          typeof sheet.getName === 'function' &&
+          typeof sheet.getLastRow === 'function' &&
+          typeof sheet.getLastColumn === 'function';
+}
+
+/**
+   * Validate if the provided object is a valid Google Spreadsheet.
+   * @param {Object} spreadsheet - The object to validate.
+   * @returns {boolean} True if the object is a valid Spreadsheet, false otherwise.
+   */
+function isValidSpreadsheet(spreadsheet) {
+  return spreadsheet &&
+          typeof spreadsheet.getName === 'function' &&
+          typeof spreadsheet.getId === 'function' &&
+          typeof spreadsheet.getSheets === 'function';
+}
